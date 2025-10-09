@@ -1,7 +1,7 @@
 # -----------------------------------------------------------
 # 1. IDE & Local Configuration
 # -----------------------------------------------------------
-/local.properties               # SDK path (Local machine setting)
+.local.properties               # SDK path (Local machine setting)
 .DS_Store                       # macOS system files
 *.iml                           # IntelliJ / Android Studio module files
 .idea/                          # IntelliJ / Android Studio project files (excluding shared config)
