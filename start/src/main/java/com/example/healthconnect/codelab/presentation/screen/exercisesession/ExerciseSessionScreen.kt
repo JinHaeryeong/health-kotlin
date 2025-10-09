@@ -38,12 +38,24 @@ import androidx.health.connect.client.records.metadata.Metadata
 import com.example.healthconnect.codelab.R
 import com.example.healthconnect.codelab.presentation.component.ExerciseSessionRow
 import com.example.healthconnect.codelab.presentation.theme.HealthConnectTheme
+import java.time.Duration
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 import java.util.UUID
 
 /**
  * Shows a list of [ExerciseSessionRecord]s from today.
  */
+
+data class ExerciseSession(
+  val id: String,
+  val startTime: ZonedDateTime,
+  val endTime: ZonedDateTime,
+  val title: String?,
+  val appName: String,
+)
 @Composable
 fun ExerciseSessionScreen(
   permissions: Set<String>,
@@ -171,12 +183,15 @@ fun ExerciseSessionScreen(
         }
 
         items(sessionsList) { session ->
+          val startTime = ZonedDateTime.ofInstant(session.startTime, session.startZoneOffset)
+          val endTime = ZonedDateTime.ofInstant(session.endTime, session.endZoneOffset)
           ExerciseSessionRow(
-            ZonedDateTime.ofInstant(session.startTime, session.startZoneOffset),
-            ZonedDateTime.ofInstant(session.endTime, session.endZoneOffset),
+            formatTimeRange(startTime, endTime),
             session.metadata.id,
-            session.metadata.dataOrigin.packageName,
-            session.title ?: stringResource(R.string.no_title),
+
+            getAppName(session.metadata.dataOrigin.packageName),
+            session.title ?: getExerciseTypeName(session.exerciseType),
+
             onDetailsClick = { uid ->
               onDetailsClick(uid)
             }
@@ -208,7 +223,7 @@ fun ExerciseSessionScreenPreview() {
         ExerciseSessionRecord(
           metadata = Metadata.manualEntryWithId(UUID.randomUUID().toString()),
           exerciseType = ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
-          title = "Running",
+          title = "달리기",
           startTime = runningStartTime.toInstant(),
           startZoneOffset = runningStartTime.offset,
           endTime = runningEndTime.toInstant(),
@@ -217,7 +232,7 @@ fun ExerciseSessionScreenPreview() {
         ExerciseSessionRecord(
           metadata = Metadata.manualEntryWithId(UUID.randomUUID().toString()),
           exerciseType = ExerciseSessionRecord.EXERCISE_TYPE_WALKING,
-          title = "Walking",
+          title = "걷기",
           startTime = walkingStartTime.toInstant(),
           startZoneOffset = walkingStartTime.offset,
           endTime = walkingEndTime.toInstant(),
@@ -226,5 +241,47 @@ fun ExerciseSessionScreenPreview() {
       ),
       uiState = ExerciseSessionViewModel.UiState.Done
     )
+  }
+}
+
+
+fun formatTimeRange(start: ZonedDateTime, end: ZonedDateTime): String {
+  // 날짜 포맷 (M/d (E), 예: 10/7 (화))
+  val dateFormatter = DateTimeFormatter
+    .ofPattern("M/d (E)", Locale.getDefault())
+
+  // 시간 포맷 (오후 6:10)
+  val timeFormatter = DateTimeFormatter
+    .ofLocalizedTime(FormatStyle.SHORT)
+    .withLocale(Locale.getDefault())
+
+  // 포맷된 문자열 생성
+  val dateText = start.format(dateFormatter)
+  val startTimeText = start.format(timeFormatter)
+  val endTimeText = end.format(timeFormatter)
+
+  val duration = Duration.between(start.toInstant(), end.toInstant())
+  val minutes = duration.toMinutes()
+
+  return "${minutes}분, ${dateText} ${startTimeText} - ${endTimeText}"
+}
+private fun getAppName(packageName: String): String {
+  return when (packageName) {
+    "com.sec.android.app.shealth" -> "삼성 헬스" // 삼성 헬스
+    "com.google.android.apps.fitness" -> "구글 핏"
+    // TODO: 필요한 다른 앱 이름 추가
+    else -> packageName
+  }
+}
+
+@Composable
+private fun getExerciseTypeName(@ExerciseSessionRecord.ExerciseTypes exerciseType: Int): String {
+  return when (exerciseType) {
+    ExerciseSessionRecord.EXERCISE_TYPE_RUNNING -> stringResource(R.string.exercise_type_running)
+    ExerciseSessionRecord.EXERCISE_TYPE_WALKING -> stringResource(R.string.exercise_type_walking)
+    ExerciseSessionRecord.EXERCISE_TYPE_EXERCISE_CLASS -> stringResource(R.string.exercise_type_class)
+    ExerciseSessionRecord.EXERCISE_TYPE_BIKING -> stringResource(R.string.exercise_type_cycling)
+    ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT -> stringResource(R.string.exercise_type_other)
+    else -> stringResource(R.string.no_title)
   }
 }

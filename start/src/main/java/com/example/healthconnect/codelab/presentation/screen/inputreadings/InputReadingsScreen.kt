@@ -164,7 +164,7 @@ fun InputReadingsScreen(
             val zonedDateTime =
               dateTimeWithOffsetOrDefault(reading.time, reading.zoneOffset)
             Text(
-              text = "${reading.weight}" + " ",
+              text = String.format("%.1f Kg", reading.weight.inKilograms),
             )
             Text(text = formatter.format(zonedDateTime))
           }
@@ -178,7 +178,7 @@ fun InputReadingsScreen(
           if (weeklyAvg == null) {
             Text(text = "0.0" + stringResource(id = R.string.kilograms))
           } else {
-            Text(text = "$weeklyAvg".take(5) + stringResource(id = R.string.kilograms))
+            Text(text = String.format("%.1f Kg", weeklyAvg.inKilograms))
           }
         }
       }

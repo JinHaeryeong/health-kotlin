@@ -34,8 +34,7 @@ import java.util.UUID
 
 @Composable
 fun ExerciseSessionInfoColumn(
-    start: ZonedDateTime,
-    end: ZonedDateTime,
+    formattedTime: String,
     uid: String,
     sourcePackageName: String,
     name: String,
@@ -48,8 +47,7 @@ fun ExerciseSessionInfoColumn(
   ) {
     Text(
       color = MaterialTheme.colors.primary,
-      text = "${start.toLocalDateTime().truncatedTo(ChronoUnit.SECONDS)} - ${end.toLocalDateTime().truncatedTo(
-        ChronoUnit.SECONDS)}",
+      text = formattedTime,
       style = MaterialTheme.typography.caption
     )
     Text(name)
@@ -63,8 +61,7 @@ fun ExerciseSessionInfoColumn(
 fun ExerciseSessionInfoColumnPreview() {
   HealthConnectTheme {
     ExerciseSessionInfoColumn(
-      ZonedDateTime.now().minusMinutes(30),
-      ZonedDateTime.now(),
+        formattedTime = "30분 10월 1일 오후 10:00 - 오후 10:30",
       UUID.randomUUID().toString(),
       "com.example.healthconnect.codelab",
       "Running"

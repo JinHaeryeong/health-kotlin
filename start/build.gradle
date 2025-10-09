@@ -16,7 +16,8 @@
 
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
+    id 'org.jetbrains.kotlin.android'
+    id "org.jetbrains.kotlin.plugin.compose"
 }
 
 android {
@@ -53,7 +54,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.0"
+        kotlinCompilerExtensionVersion = "2.2.0"
     }
     packagingOptions {
         resources {
@@ -70,7 +71,7 @@ dependencies {
     implementation(composeBom)
 
     // Add a dependency of Health Connect SDK
-     implementation "androidx.health.connect:connect-client:1.1.0-alpha12"
+    implementation "androidx.health.connect:connect-client:1.1.0-alpha12"
 
     // For viewmodel support
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
@@ -89,8 +90,10 @@ dependencies {
     implementation "androidx.compose.ui:ui-tooling-preview"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     implementation "androidx.activity:activity-compose:$activity_compose_version"
-
+    // https://mvnrepository.com/artifact/io.github.ehsannarmani/compose-charts
+//    implementation "org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable:$compose_compiler_version"
+    implementation 'io.github.ehsannarmani:compose-charts:0.2.0'
     debugImplementation "androidx.compose.ui:ui-tooling"
 
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:1.2.2"
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
 }

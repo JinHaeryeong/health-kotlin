@@ -15,9 +15,21 @@
  */
 package com.example.healthconnect.codelab.presentation.component
 
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import com.example.healthconnect.codelab.data.toChartDataPoints // ChartMappers.kt의 확장 함수
+import ir.ehsannarmani.compose_charts.LineChart
+import ir.ehsannarmani.compose_charts.models.Line
+import ir.ehsannarmani.compose_charts.models.AnimationMode
+import ir.ehsannarmani.compose_charts.models.DrawStyle
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.remember
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -43,6 +55,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
+
 /**
  * Displays a list of [SpeedRecord] data in the [LazyColumn].
  */
@@ -65,7 +78,7 @@ fun LazyListScope.speedSeries(
 /**
  * Displays a list of [HeartRateRecord] data in the [LazyColumn].
  */
-fun LazyListScope.heartRateSeries(
+/* fun LazyListScope.heartRateSeries(
     @StringRes labelId: Int,
     series: List<HeartRateRecord>,
 ) {
@@ -78,6 +91,68 @@ fun LazyListScope.heartRateSeries(
       endZoneOffset = serie.endZoneOffset
     )
     items(serie.samples) { SeriesRow(it.beatsPerMinute.toString()) }
+  }
+}
+*/
+
+
+
+@Composable
+fun HeartRateChart(
+  @StringRes labelId: Int,
+  series: List<HeartRateRecord>
+) {
+  val dataPoints = remember(series) {
+    series.toChartDataPoints()
+  }
+
+  if (dataPoints.isEmpty()) {
+    Text(stringResource(labelId) + ": 데이터 없음", modifier = Modifier.padding(22.dp))
+    return
+  }
+
+  val heartRateValues: List<Double> = remember(dataPoints) {
+    dataPoints.map { it.beatsPerMinute.toDouble() }
+  }
+
+  val chartLabel = stringResource(id = R.string.hr_series)
+  LineChart(
+    modifier = Modifier.fillMaxWidth().height(250.dp).padding(horizontal = 22.dp, vertical = 8.dp),
+    data = remember(heartRateValues, labelId) {
+      listOf(
+        Line(
+          label = chartLabel, // 레이블을 설정
+          values = heartRateValues,
+          color = SolidColor(Color(0xFFE53935)),
+
+           firstGradientFillColor = Color(0xFFE53935).copy(alpha = 0.3f),
+           secondGradientFillColor = Color.Transparent,
+          strokeAnimationSpec = tween(2000, easing = EaseInOutCubic),
+          gradientAnimationDelay = 1000,
+          drawStyle = DrawStyle.Stroke(width = 2.dp),
+        )
+      )
+    },
+
+
+     animationMode = AnimationMode.Together(delayBuilder = { it * 100L }),
+
+    // Y축 최소/최대 값 설정 인수가 없다면 제거
+    // minYValue = 50f,
+    // maxYValue = 200f,
+
+    // gridColor, labelColor 인수가 없다면 제거
+  )
+
+  val firstTime = dataPoints.first().time.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"))
+  val lastTime = dataPoints.last().time.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"))
+
+  Row(
+    modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 4.dp),
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Text(firstTime, style = MaterialTheme.typography.caption, color = Color.Gray)
+    Text(lastTime, style = MaterialTheme.typography.caption, color = Color.Gray)
   }
 }
 
@@ -139,28 +214,34 @@ fun HeartRateSeriesPreview() {
     LazyColumn {
       val time1 = Instant.now()
       val time2 = time1.minusSeconds(60)
-      heartRateSeries(
-        labelId = R.string.hr_series,
-        series = listOf(
-          HeartRateRecord(
-            metadata = Metadata.manualEntry(),
-            startTime = time2,
-            startZoneOffset = ZoneId.systemDefault().rules.getOffset(time2),
-            endTime = time1,
-            endZoneOffset = ZoneId.systemDefault().rules.getOffset(time1),
-            samples = listOf(
-              HeartRateRecord.Sample(
-                beatsPerMinute = 103,
-                time = time1
-              ),
-              HeartRateRecord.Sample(
-                beatsPerMinute = 85,
-                time = time2
-              )
+      val mockSeries = listOf(
+        HeartRateRecord(
+          startTime = time2,
+          endTime = time1,
+          samples = listOf(
+            HeartRateRecord.Sample(
+              beatsPerMinute = 103L, // ★ Long 타입 명시적으로 수정
+              time = time1
+            ),
+            HeartRateRecord.Sample(
+              beatsPerMinute = 85L, // ★ Long 타입 명시적으로 수정
+              time = time2
             )
-          )
+          ),
+          startZoneOffset = ZoneOffset.UTC,
+          endZoneOffset = ZoneOffset.UTC,
+          // Metadata 생성자도 string을 요구하므로 안전하게 수정
+          metadata = Metadata.manualEntry()
         )
       )
+
+      item {
+        Text("심박수 차트 미리보기", style = MaterialTheme.typography.subtitle1)
+        HeartRateChart(
+          labelId = R.string.hr_series,
+          series = mockSeries
+        )
+      }
     }
   }
 }

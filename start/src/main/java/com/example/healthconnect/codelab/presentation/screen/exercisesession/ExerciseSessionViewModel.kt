@@ -41,6 +41,10 @@ import java.util.UUID
 import kotlin.random.Random
 import kotlinx.coroutines.launch
 
+data class UISession(
+  val appName: String,
+  val displayTitle: String,
+)
 class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectManager) :
   ViewModel() {
   val permissions = setOf(
@@ -48,6 +52,7 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
     HealthPermission.getReadPermission(ExerciseSessionRecord::class),
     HealthPermission.getWritePermission(StepsRecord::class),
     HealthPermission.getReadPermission(StepsRecord::class),
+    HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
     HealthPermission.getWritePermission(TotalCaloriesBurnedRecord::class),
     HealthPermission.getWritePermission(HeartRateRecord::class)
   )
@@ -150,6 +155,17 @@ class ExerciseSessionViewModel(private val healthConnectManager: HealthConnectMa
       UiState.Error(ioException)
     } catch (illegalStateException: IllegalStateException) {
       UiState.Error(illegalStateException)
+    }
+  }
+  
+  // 필요없는듯
+  private fun getExerciseTypeString(type: Int): String {
+    return when (type) {
+      ExerciseSessionRecord.EXERCISE_TYPE_RUNNING -> "달리기"
+      ExerciseSessionRecord.EXERCISE_TYPE_WALKING -> "걷기"
+      ExerciseSessionRecord.EXERCISE_TYPE_EXERCISE_CLASS -> "헬스"
+      // TODO: 필요한 다른 운동 유형 추가
+      else -> "알 수 없는 운동"
     }
   }
 

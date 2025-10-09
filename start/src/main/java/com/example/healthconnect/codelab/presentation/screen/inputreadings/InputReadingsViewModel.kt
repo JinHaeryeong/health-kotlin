@@ -72,12 +72,12 @@ class InputReadingsViewModel(private val healthConnectManager: HealthConnectMana
   }
 
   private suspend fun readWeightInputs() {
-    val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
+    val startOfWeek = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS).minusDays(7)
     val now = Instant.now()
-    val endofWeek = startOfDay.toInstant().plus(7, ChronoUnit.DAYS)
-    readingsList.value = healthConnectManager.readWeightInputs(startOfDay.toInstant(), now)
+    val endofWeek = startOfWeek.toInstant().plus(7, ChronoUnit.DAYS)
+    readingsList.value = healthConnectManager.readWeightInputs(startOfWeek.toInstant(), now)
     weeklyAvg.value =
-      healthConnectManager.computeWeeklyAverage(startOfDay.toInstant(), endofWeek)
+      healthConnectManager.computeWeeklyAverage(startOfWeek.toInstant(), endofWeek)
   }
 
   /**

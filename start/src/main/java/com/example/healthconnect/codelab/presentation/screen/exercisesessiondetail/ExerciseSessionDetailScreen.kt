@@ -17,8 +17,10 @@ package com.example.healthconnect.codelab.presentation.screen.exercisesessiondet
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SpeedRecord
@@ -39,9 +42,10 @@ import com.example.healthconnect.codelab.R
 import com.example.healthconnect.codelab.data.ExerciseSessionData
 import com.example.healthconnect.codelab.data.formatTime
 import com.example.healthconnect.codelab.presentation.component.ExerciseSessionDetailsMinMaxAvg
-import com.example.healthconnect.codelab.presentation.component.heartRateSeries
+import com.example.healthconnect.codelab.presentation.component.HeartRateChart
 import com.example.healthconnect.codelab.presentation.component.sessionDetailsItem
 import com.example.healthconnect.codelab.presentation.theme.HealthConnectTheme
+import java.text.DecimalFormat
 import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -103,10 +107,13 @@ fun ExerciseSessionDetailScreen(
           Text(activeDuration.formatTime())
         }
         sessionDetailsItem(labelId = R.string.total_steps) {
-          Text(sessionMetrics.totalSteps?.toString() ?: "0")
+          Text(sessionMetrics.totalSteps?.toString() ?: stringResource(id = R.string.not_available_abbrev))
+        }
+        sessionDetailsItem(labelId = R.string.total_steps_for_day) { // stringResource를 새로 정의해야 함
+          Text(sessionMetrics.totalStepsForDay?.toString() ?: stringResource(R.string.not_available_abbrev))
         }
         sessionDetailsItem(labelId = R.string.total_energy) {
-          Text(sessionMetrics.totalEnergyBurned?.inCalories.toString())
+          Text(formatEnergy(sessionMetrics.totalEnergyBurned))
         }
         sessionDetailsItem(labelId = R.string.hr_stats) {
           ExerciseSessionDetailsMinMaxAvg(
@@ -118,10 +125,21 @@ fun ExerciseSessionDetailScreen(
               ?: stringResource(id = R.string.not_available_abbrev)
           )
         }
-        heartRateSeries(
-          labelId = R.string.hr_series,
-          series = sessionMetrics.heartRateSeries
-        )
+        item {
+          // 차트 제목 (기존 seriesHeading 대신 직접 Text로 구현)
+          Text(
+            stringResource(R.string.hr_series),
+            style = MaterialTheme.typography.h5,
+            color = MaterialTheme.colors.primary,
+            modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp)
+          )
+
+          // HeartRateChart 컴포저블 호출
+          HeartRateChart(
+            labelId = R.string.hr_series,
+            series = sessionMetrics.heartRateSeries
+          )
+        }
       }
     }
   }
@@ -135,6 +153,7 @@ fun ExerciseSessionScreenPreview() {
     val sessionMetrics = ExerciseSessionData(
       uid = uid,
       totalSteps = 5152,
+      totalStepsForDay = 13943L,
       totalDistance = Length.meters(11923.4),
       totalEnergyBurned = Energy.calories(1131.2),
       minHeartRate = 55,
@@ -204,4 +223,16 @@ private fun generateHeartRateSeries(): List<HeartRateRecord> {
       samples = data
     )
   )
+}
+
+//칼로리 표기가 이상해서 kcal로 변환하기
+private fun formatEnergy(energy: Energy?): String {
+  if (energy == null) {
+    return "N/A"
+  }
+  val kcalValue = energy.inKilocalories
+
+  val formatter = DecimalFormat("0.0")
+
+  return "${formatter.format(kcalValue)} kcal"
 }

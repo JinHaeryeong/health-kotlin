@@ -87,7 +87,7 @@ fun WelcomeScreen(
   ) {
     Image(
       modifier = Modifier.fillMaxWidth(0.5f),
-      painter = painterResource(id = R.drawable.ic_health_connect_logo),
+      painter = painterResource(id = R.drawable.logo),
       contentDescription = stringResource(id = R.string.health_connect_logo)
     )
     Spacer(modifier = Modifier.height(32.dp))
