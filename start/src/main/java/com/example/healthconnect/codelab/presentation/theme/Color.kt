@@ -18,4 +18,4 @@ package com.example.healthconnect.codelab.presentation.theme
 import androidx.compose.ui.graphics.Color
 
 val HealthConnectGreen = Color(0xFF3DDB85)
-val HealthConnectBlue = Color(0xFF4285F4)
+val HealthConnectBlue = Color(0xFFFFC051)

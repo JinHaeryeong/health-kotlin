@@ -26,6 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
 import com.example.healthconnect.codelab.data.HealthConnectManager
+import com.example.healthconnect.codelab.presentation.screen.LoginScreen
 import com.example.healthconnect.codelab.presentation.screen.WelcomeScreen
 import com.example.healthconnect.codelab.presentation.screen.changes.DifferentialChangesScreen
 import com.example.healthconnect.codelab.presentation.screen.changes.DifferentialChangesViewModel
@@ -40,6 +41,7 @@ import com.example.healthconnect.codelab.presentation.screen.inputreadings.Input
 import com.example.healthconnect.codelab.presentation.screen.inputreadings.InputReadingsViewModel
 import com.example.healthconnect.codelab.presentation.screen.inputreadings.InputReadingsViewModelFactory
 import com.example.healthconnect.codelab.presentation.screen.privacypolicy.PrivacyPolicyScreen
+import com.example.healthconnect.codelab.presentation.screen.signup.SignupScreen
 import com.example.healthconnect.codelab.showExceptionSnackbar
 
 /**
@@ -59,6 +61,45 @@ fun HealthConnectNavigation(
         healthConnectAvailability = availability,
         onResumeAvailabilityCheck = {
           healthConnectManager.checkAvailability()
+        },
+        // HealthConnectNavigation.kt 파일 내 WelcomeScreen composable 블록 수정
+
+        onNavigateNext = {
+          if (checkLocalAuthToken()) {
+            navController.navigate(Screen.ExerciseSessions.route) {
+              popUpTo(Screen.WelcomeScreen.route) { inclusive = true }
+            }
+          } else {
+            navController.navigate(Screen.LoginScreen.route) {
+              popUpTo(Screen.WelcomeScreen.route) { inclusive = true }
+            }
+          }
+        }
+      )
+    }
+    composable(Screen.LoginScreen.route) {
+      LoginScreen(
+        onLoginSuccess = {
+          navController.navigate(Screen.ExerciseSessions.route) {
+            popUpTo(Screen.LoginScreen.route) { inclusive = true }
+          }
+        },
+        onNavigateToSignup = {
+          navController.navigate(Screen.SignUp.route)
+        }
+      )
+    }
+    composable(Screen.SignUp.route) {
+      SignupScreen (
+        // 회원가입 성공 시 로그인 화면으로 돌아가기
+        onSignupSuccess = {
+          navController.navigate(Screen.LoginScreen.route) {
+            popUpTo(Screen.SignUp.route) { inclusive = true }
+          }
+        },
+        // 뒤로가기 버튼 클릭 시 로그인 화면으로 돌아가기
+        onNavigateBack = {
+          navController.popBackStack()
         }
       )
     }
@@ -228,4 +269,12 @@ fun HealthConnectNavigation(
       )
     }
   }
+}
+
+fun checkLocalAuthToken(): Boolean {
+  // false를 반환하여 LoginScreen으로 이동하는 플로우를 테스트
+  return false
+
+  // true를 반환하면 LoginScreen을 건너뛰고 바로 ExerciseSessions로 이동
+  // return true
 }

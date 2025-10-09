@@ -27,6 +27,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
@@ -53,6 +54,7 @@ import com.example.healthconnect.codelab.presentation.theme.HealthConnectTheme
 fun WelcomeScreen(
     healthConnectAvailability: HealthConnectAvailability,
     onResumeAvailabilityCheck: () -> Unit,
+    onNavigateNext: () -> Unit,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ) {
   val currentOnAvailabilityCheck by rememberUpdatedState(onResumeAvailabilityCheck)
@@ -97,7 +99,12 @@ fun WelcomeScreen(
     )
     Spacer(modifier = Modifier.height(32.dp))
     when (healthConnectAvailability) {
-      HealthConnectAvailability.INSTALLED -> InstalledMessage()
+      HealthConnectAvailability.INSTALLED -> {
+        LaunchedEffect(healthConnectAvailability) {
+          onNavigateNext()
+        }
+        InstalledMessage()
+      }
       HealthConnectAvailability.NOT_INSTALLED -> NotInstalledMessage()
       HealthConnectAvailability.NOT_SUPPORTED -> NotSupportedMessage()
     }
@@ -110,7 +117,8 @@ fun InstalledMessagePreview() {
   HealthConnectTheme {
     WelcomeScreen(
       healthConnectAvailability = HealthConnectAvailability.INSTALLED,
-      onResumeAvailabilityCheck = {}
+      onResumeAvailabilityCheck = {},
+      onNavigateNext = {}
     )
   }
 }
@@ -121,7 +129,8 @@ fun NotInstalledMessagePreview() {
   HealthConnectTheme {
     WelcomeScreen(
       healthConnectAvailability = HealthConnectAvailability.NOT_INSTALLED,
-      onResumeAvailabilityCheck = {}
+      onResumeAvailabilityCheck = {},
+      onNavigateNext = {}
     )
   }
 }
@@ -132,7 +141,8 @@ fun NotSupportedMessagePreview() {
   HealthConnectTheme {
     WelcomeScreen(
       healthConnectAvailability = HealthConnectAvailability.NOT_SUPPORTED,
-      onResumeAvailabilityCheck = {}
+      onResumeAvailabilityCheck = {},
+      onNavigateNext = {}
     )
   }
 }

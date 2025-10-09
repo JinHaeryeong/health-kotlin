@@ -164,6 +164,7 @@ class HealthConnectManager(private val context: Context) {
   @SuppressLint("RestrictedApi")
   @Override
   suspend fun writeExerciseSession(start: ZonedDateTime, end: ZonedDateTime) {
+    try {
     healthConnectClient.insertRecords(
       listOf<Record>(
         ExerciseSessionRecord(
@@ -193,6 +194,12 @@ class HealthConnectManager(private val context: Context) {
         )
       ) + buildHeartRateSeries(start, end)
     )
+    Log.d("HC_WRITE", "운동 세션 기록 성공!")
+    Toast.makeText(context, "운동 세션 기록 성공", Toast.LENGTH_SHORT).show()
+    } catch (e: Exception) {
+      Log.e("HC_WRITE", "운동 세션 기록 실패: ${e.message}")
+      Toast.makeText(context, "운동 세션 기록 실패: ${e.message}", Toast.LENGTH_LONG).show()
+    }
   }
   /**
    * TODO: Build [HeartRateRecord].
@@ -389,7 +396,7 @@ class HealthConnectManager(private val context: Context) {
 
     // ... (aggregateRequestStepsEnergy, aggregateRequestHeartRate 등 기존 코드 생략)
 
-    // 1. 걸음 수, 칼로리 등 범용 데이터 집계 요청 (필터 없이)
+    //걸음 수, 칼로리 등 범용 데이터 집계 요청 (필터 없이)
     val aggregateRequestStepsEnergy = AggregateRequest(
       metrics = setOf(StepsRecord.COUNT_TOTAL, TotalCaloriesBurnedRecord.ENERGY_TOTAL),
       timeRangeFilter = timeRangeFilter
@@ -410,7 +417,7 @@ class HealthConnectManager(private val context: Context) {
     val totalStepsForTheDay = readTotalStepsForDay(sessionDay)
 
 
-    // 4. 로그 (깔끔하게 정리)
+    //  로그 (깔끔하게 정리)
     Log.d("HC_DEBUG", "Steps Result (Session): ${aggregateDataStepsEnergy[StepsRecord.COUNT_TOTAL]}")
     Log.d("HC_DEBUG", "Steps Result (Day Total): $totalStepsForTheDay") // 새로운 로그 추가
     Log.d("HC_DEBUG", "Time Range: ${timeRangeFilter.startTime} ~ ${timeRangeFilter.endTime}")

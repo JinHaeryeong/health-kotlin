@@ -10,11 +10,14 @@ limitations under the License.-->
   <string name="menu">메뉴</string>
   <!-- Screen titles -->
   <string name="welcome_screen">환영 화면</string>
+  <string name="login_screen">로그인 화면</string>
+  <string name="signup_screen">회원가입 화면</string>
   <string name="exercise_sessions">운동 세션</string>
   <string name="exercise_session_detail">운동 세션 상세 정보</string>
   <string name="sleep_sessions">수면 세션</string>
   <string name="sleep_session_detail">수면 세션 상세 정보</string>
   <string name="differential_changes">변경 사항</string>
+
   <!-- Welcome screen -->
   <string name="welcome_message">독거 노인을 위한 건강 관리 앱에 오신 것을 환영합니다!</string>
   <string name="health_connect_logo">독거 노인 로고</string>
@@ -50,6 +53,20 @@ limitations under the License.-->
   <string name="permissions_button_label">권한 요청</string>
   <string name="not_available_abbrev">N/A</string>
 
+  <!-- Login screen -->
+  <string name="login_screen_title">로그인</string>
+  <string name="user_id_label">아이디</string>
+  <string name="password_label">비밀번호</string>
+  <string name="patient_id_label">환자 번호</string>
+  <string name="login_button_label">로그인</string>
+  <string name="signup_button_label">회원가입</string>
+
+  <!-- SignUp screen -->
+  <string name="signup_screen_title">회원가입</string>
+  <string name="back_to_login">돌아가기</string>
+  <string name="patient_name_label">환자 이름</string>
+  <string name="patient_age_label">환자 나이"</string>
+  <string name="patient_condition_label">복용 약/지병</string>
   <!-- Exercise Session screen -->
   <string name="insert_exercise_session">세션 삽입</string>
   <string name="no_title">제목 없음</string>
