@@ -1,8 +1,11 @@
 package com.example.healthconnect.codelab.presentation.screen.signup
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll // 스크롤을 위해 추가
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -16,8 +19,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel // ViewModel 주입을 위해 추가
 import com.example.healthconnect.codelab.R
-// ... (기타 임포트)
 
 val ConditionOptions = listOf(
     "없음",
@@ -32,8 +36,18 @@ val ConditionOptions = listOf(
 @Composable
 fun SignupScreen(
     onSignupSuccess: () -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    viewModel: SignUpViewModel = viewModel()
 ) {
+    LaunchedEffect(Unit) {
+        // success event Flow를 수집
+        viewModel.signupSuccessEvent.collect { isSuccess ->
+            if (isSuccess) {
+                onSignupSuccess() // Navigation 실행
+            }
+        }
+    }
+
     // 사용자 정보 상태
     var userId by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -58,7 +72,8 @@ fun SignupScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 32.dp),
+            .padding(horizontal = 32.dp)
+            .verticalScroll(rememberScrollState()), // 🌟 세로 스크롤 가능하도록 추가
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -101,7 +116,6 @@ fun SignupScreen(
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         )
 
-        // 복용 약/지병 Multi-Select UI
         Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
             Text(
                 text = stringResource(R.string.patient_condition_label), // "복용 약/지병" 라벨
@@ -109,16 +123,18 @@ fun SignupScreen(
                 modifier = Modifier.padding(bottom = 4.dp)
             )
 
-            // 선택된 항목 Chip 표시 영역
-            Row(modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+            // 선택된 항목 Chip 표시 영역 (가로 스크롤)
+            Row(modifier = Modifier.fillMaxWidth().wrapContentHeight().horizontalScroll(
+                rememberScrollState()
+            ),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 selectedConditions.forEach { condition ->
-                    // 선택된 항목이 '없음'이고 다른 항목도 같이 선택되어 있다면 '없음'을 제거하기ㅏ..~
+                    // '없음'과 다른 항목이 함께 선택된 경우 '없음'은 표시하지 않음
                     if (condition == "없음" && selectedConditions.size > 1) return@forEach
 
                     InputChip(
-                        onClick = { /* 칩 클릭 시 동작 (제거) */ },
+                        onClick = { /* 제거는 trailingIcon에서 처리 */ },
                         label = { Text(condition, style = MaterialTheme.typography.caption) },
                         selected = true,
                         // Chip 제거 아이콘
@@ -138,7 +154,6 @@ fun SignupScreen(
                 }
             }
 
-            // 2. 새로운 항목을 추가하는 Dropdown 메뉴 (버튼 역할)
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded },
@@ -180,7 +195,6 @@ fun SignupScreen(
             }
         }
 
-        // 기타 상세 입력 필드 (Multi-Select에 연결)
         if (isOtherSelected) {
             OutlinedTextField(
                 value = otherConditionDetail,
@@ -191,18 +205,37 @@ fun SignupScreen(
             )
         }
 
+        if (viewModel.errorMessage != null) {
+            Text(
+                text = viewModel.errorMessage!!,
+                color = Color.Red,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+
         Spacer(modifier = Modifier.height(32.dp))
 
         // 회원가입 완료 버튼
         Button(
-            enabled = isInputValid,
+            enabled = isInputValid && !viewModel.isLoading,
             onClick = {
-                // TODO: ViewModel.signup() 호출
-                onSignupSuccess()
+                viewModel.signup(
+                    userId = userId,
+                    password = password,
+                    patientName = patientName,
+                    patientAge = patientAge,
+                    selectedConditions = selectedConditions,
+                    otherConditionDetail = otherConditionDetail
+                )
             },
             modifier = Modifier.fillMaxWidth().height(56.dp)
         ) {
-            Text(stringResource(R.string.signup_button_label))
+            // 로딩 중일 때 로딩 인디케이터 표시
+            if (viewModel.isLoading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            } else {
+                Text(stringResource(R.string.signup_button_label))
+            }
         }
 
         // 뒤로가기 버튼

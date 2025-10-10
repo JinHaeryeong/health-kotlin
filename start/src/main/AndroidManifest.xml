@@ -21,7 +21,8 @@
       android:name="com.example.healthconnect.codelab.presentation.BaseApplication"
       android:roundIcon="@mipmap/launcher_logo"
       android:supportsRtl="true"
-      android:theme="@style/Theme.HealthConnect">
+      android:theme="@style/Theme.HealthConnect"
+      android:usesCleartextTraffic="true"> <!-- 로컬서버 접근하려면 있어야한다함-->
     <activity
         android:name="com.example.healthconnect.codelab.presentation.MainActivity"
         android:exported="true"
@@ -53,6 +54,8 @@
   <uses-permission android:name="android.permission.health.WRITE_WEIGHT"/>
   <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
   <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+  <uses-permission android:name="android.permission.INTERNET" />
+
   <!-- TODO: declare Health Connect visibility -->
   <queries>
     <package android:name="com.google.android.apps.healthdata" />
