@@ -21,9 +21,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.BloodGlucoseRecord
+import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.OxygenSaturationRecord
+import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.WeightRecord
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -40,7 +47,21 @@ class ExerciseSessionDetailViewModel(
   val permissions = setOf(
     HealthPermission.getReadPermission(StepsRecord::class),
     HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
-    HealthPermission.getReadPermission(HeartRateRecord::class)
+    HealthPermission.getReadPermission(HeartRateRecord::class),
+    HealthPermission.getReadPermission(BloodGlucoseRecord::class),
+    HealthPermission.getWritePermission(BloodGlucoseRecord::class),
+    HealthPermission.getReadPermission(BloodPressureRecord::class),
+    HealthPermission.getWritePermission(BloodPressureRecord::class),
+    HealthPermission.getReadPermission(ExerciseSessionRecord::class),
+    HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+    HealthPermission.getReadPermission(WeightRecord::class),
+    HealthPermission.getWritePermission(WeightRecord::class),
+    HealthPermission.getReadPermission(OxygenSaturationRecord::class),
+    HealthPermission.getWritePermission(OxygenSaturationRecord::class),
+    HealthPermission.getReadPermission(SpeedRecord::class),
+    HealthPermission.getWritePermission(SpeedRecord::class),
+    HealthPermission.getReadPermission(DistanceRecord::class),
+    HealthPermission.getWritePermission(DistanceRecord::class),
   )
 
   var permissionsGranted = mutableStateOf(false)

@@ -34,6 +34,10 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
 
+      <intent-filter>
+        <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+      </intent-filter>
+
       <!-- TODO: Add intent filter to handle permission rationale intent -->
 
     </activity>
@@ -76,7 +80,7 @@
   <uses-permission android:name="android.permission.health.WRITE_OXYGEN_SATURATION" />
   <!-- 호흡수 -->
   <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
-  <uses-permission android:name="android.permission.health.WRITE_RESPIRATORY_RATE" />
+  <uses-permission android:name="android.permission.health.WaRITE_RESPIRATORY_RATE" />
 
   <!-- 속도 -->
   <uses-permission android:name="android.permission.health.READ_SPEED" />
