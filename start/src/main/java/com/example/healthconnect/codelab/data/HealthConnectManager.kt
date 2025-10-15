@@ -17,6 +17,7 @@ package com.example.healthconnect.codelab.data
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.health.connect.datatypes.RespiratoryRateRecord
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContract
@@ -50,7 +51,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.concurrent.TimeUnit
 import android.util.Log
+import androidx.compose.runtime.toLong
+import androidx.health.connect.client.records.BloodGlucoseRecord
+import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.records.metadata.Metadata
+import androidx.health.connect.client.units.BloodGlucose
+import androidx.health.connect.client.units.Velocity
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
@@ -229,6 +237,7 @@ class HealthConnectManager(private val context: Context) {
     )
   }
 
+  // 그냥 구글이 못 받아 오는 게 맞음
   private suspend fun readStepsByTimeRange(
     startTime: Instant,
     endTime: Instant
@@ -240,7 +249,7 @@ class HealthConnectManager(private val context: Context) {
           timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
         )
       )
-      Log.d("HC_DEBUG", "Raw Steps Read Count: ${response.records.size}")
+      Log.d("HC_DEBUG", "Raw Steps Read Count: ${response.records}")
       response.records
     } catch (e: Exception) {
       Log.e("HC_DEBUG", "Error reading raw steps: ${e.message}")
@@ -259,7 +268,7 @@ class HealthConnectManager(private val context: Context) {
     )
 
     val response = healthConnectClient.aggregate(request)
-    // Long? 타입으로 반환됩니다.
+    // Long 타입으로 반환
     return response[StepsRecord.COUNT_TOTAL]
   }
 
@@ -391,14 +400,15 @@ class HealthConnectManager(private val context: Context) {
       startTime = exerciseSession.record.startTime,
       endTime = exerciseSession.record.endTime
     )
-
     val dataOriginFilter = setOf(exerciseSession.record.metadata.dataOrigin)
 
-    // ... (aggregateRequestStepsEnergy, aggregateRequestHeartRate 등 기존 코드 생략)
+    val rawStepsRecords = readStepsByTimeRange(timeRangeFilter.startTime!!, timeRangeFilter.endTime!!)
+
+    val sessionTotalSteps = rawStepsRecords.sumOf { it.count }
 
     //걸음 수, 칼로리 등 범용 데이터 집계 요청 (필터 없이)
     val aggregateRequestStepsEnergy = AggregateRequest(
-      metrics = setOf(StepsRecord.COUNT_TOTAL, TotalCaloriesBurnedRecord.ENERGY_TOTAL),
+      metrics = setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL),
       timeRangeFilter = timeRangeFilter
     )
     val aggregateDataStepsEnergy = healthConnectClient.aggregate(aggregateRequestStepsEnergy)
@@ -409,6 +419,26 @@ class HealthConnectManager(private val context: Context) {
       timeRangeFilter = timeRangeFilter,
       dataOriginFilter = dataOriginFilter
     )
+
+    // 속도
+
+    val speedRecords = readData<SpeedRecord>(timeRangeFilter)
+    Log.d("HC_DEBUG", "확인용~ $speedRecords");
+    val allSpeeds = speedRecords.flatMap { it.samples.map { s -> s.speed.inMetersPerSecond } }
+
+    val avgSpeed = if (allSpeeds.isNotEmpty()) allSpeeds.average() else null
+    val maxSpeed = allSpeeds.maxOrNull()
+    val minSpeed = allSpeeds.minOrNull()
+
+    val avgSpeedVelocity = avgSpeed?.let { Velocity.metersPerSecond(it) }
+    val maxSpeedVelocity = maxSpeed?.let { Velocity.metersPerSecond(it) }
+    val minSpeedVelocity = minSpeed?.let { Velocity.metersPerSecond(it) }
+    val aggregateRequestDistance = AggregateRequest(
+      metrics = setOf(DistanceRecord.DISTANCE_TOTAL),
+      timeRangeFilter = timeRangeFilter,
+    )
+
+    val aggregateDataDistance = healthConnectClient.aggregate(aggregateRequestDistance)
     val aggregateDataHeartRate = healthConnectClient.aggregate(aggregateRequestHeartRate)
 
     // 하루 총 걸음 수 데이터 로드
@@ -418,7 +448,8 @@ class HealthConnectManager(private val context: Context) {
 
 
     //  로그 (깔끔하게 정리)
-    Log.d("HC_DEBUG", "Steps Result (Session): ${aggregateDataStepsEnergy[StepsRecord.COUNT_TOTAL]}")
+    Log.d("HC_DEBUG", "Steps Result (Session): $sessionTotalSteps")
+    Log.d("HC_DEBUG", "평균 속도: $avgSpeed, 최대 속도: $maxSpeed, 최소 속도: $minSpeed")
     Log.d("HC_DEBUG", "Steps Result (Day Total): $totalStepsForTheDay") // 새로운 로그 추가
     Log.d("HC_DEBUG", "Time Range: ${timeRangeFilter.startTime} ~ ${timeRangeFilter.endTime}")
 
@@ -427,7 +458,11 @@ class HealthConnectManager(private val context: Context) {
     return ExerciseSessionData(
       uid = uid,
       totalActiveTime = aggregateDataHeartRate[ExerciseSessionRecord.EXERCISE_DURATION_TOTAL],
-      totalSteps = aggregateDataStepsEnergy[StepsRecord.COUNT_TOTAL],
+      totalSteps = sessionTotalSteps,
+      totalDistance = aggregateDataDistance[DistanceRecord.DISTANCE_TOTAL],
+      avgSpeed = avgSpeedVelocity,
+      maxSpeed = maxSpeedVelocity,
+      minSpeed = minSpeedVelocity,
       totalEnergyBurned = aggregateDataStepsEnergy[TotalCaloriesBurnedRecord.ENERGY_TOTAL],
       minHeartRate = aggregateDataHeartRate[HeartRateRecord.BPM_MIN],
       maxHeartRate = aggregateDataHeartRate[HeartRateRecord.BPM_MAX],
@@ -435,6 +470,7 @@ class HealthConnectManager(private val context: Context) {
       heartRateSeries = heartRateData,
       // 반환 객체에 totalStepsForDay 추가 (ExerciseSessionData 수정 필요)
       totalStepsForDay = totalStepsForTheDay
+
     )
   }
   /**
@@ -464,6 +500,61 @@ class HealthConnectManager(private val context: Context) {
       nextChangesToken = response.nextChangesToken
     } while (response.hasMore)
     emit(ChangesMessage.NoMoreChanges(nextChangesToken))  }
+
+  suspend fun readAndLogRespiratoryRate(start: Instant, end: Instant) {
+    val request = ReadRecordsRequest(
+      recordType = androidx.health.connect.client.records.RespiratoryRateRecord::class,
+      timeRangeFilter = TimeRangeFilter.between(start, end),
+    )
+    val response = healthConnectClient.readRecords(request)
+
+    Log.d("ALL_DATA_CHECK", "--- 호흡수(Respiratory Rate) 데이터 ---")
+    if (response.records.isEmpty()) {
+      Log.d("ALL_DATA_CHECK", "기간 내 호흡수 기록 없음")
+    } else {
+      response.records.forEach { record ->
+        Log.d("ALL_DATA_CHECK", "시간: ${record.time}, 호흡수: ${record.rate} 회/분")
+      }
+    }
+  }
+
+  suspend fun readAndLogBloodGlucose(start: Instant, end: Instant) {
+    val request = ReadRecordsRequest(
+      recordType = BloodGlucoseRecord::class,
+      timeRangeFilter = TimeRangeFilter.between(start, end)
+    )
+    val response = healthConnectClient.readRecords(request)
+
+    Log.d("ALL_DATA_CHECK", "--- 혈당(Blood Glucose) 데이터 ---")
+    if (response.records.isEmpty()) {
+      Log.d("ALL_DATA_CHECK", "기간 내 혈당 기록 없음")
+    } else {
+      response.records.forEach { record ->
+        val glucoseMgDl = record.level.inMilligramsPerDeciliter
+        Log.d("ALL_DATA_CHECK", "시간: ${record.time}, 혈당(mg/dL): $glucoseMgDl")
+      }
+    }
+  }
+
+
+  suspend fun readAndLogBloodPressure(start: Instant, end: Instant) {
+    val request = ReadRecordsRequest(
+      recordType = BloodPressureRecord::class,
+      timeRangeFilter = TimeRangeFilter.between(start, end)
+    )
+    val response = healthConnectClient.readRecords(request)
+
+    Log.d("ALL_DATA_CHECK", "--- 혈압(Blood Pressure) 데이터 ---")
+    if (response.records.isEmpty()) {
+      Log.d("ALL_DATA_CHECK", "기간 내 혈압 기록 없음")
+    } else {
+      response.records.forEach { record ->
+        val systolic = record.systolic.inMillimetersOfMercury
+        val diastolic = record.diastolic.inMillimetersOfMercury
+        Log.d("ALL_DATA_CHECK", "시간: ${record.time}, 수축기/이완기(mmHg): $systolic / $diastolic")
+      }
+    }
+  }
 
   /**
    * Enqueue the ReadStepWorker

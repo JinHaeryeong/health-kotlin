@@ -12,6 +12,7 @@ limitations under the License.-->
   <string name="welcome_screen">환영 화면</string>
   <string name="login_screen">로그인 화면</string>
   <string name="signup_screen">회원가입 화면</string>
+  <string name="total_screen">전체</string>
   <string name="exercise_sessions">운동 세션</string>
   <string name="exercise_session_detail">운동 세션 상세 정보</string>
   <string name="sleep_sessions">수면 세션</string>
@@ -93,7 +94,7 @@ limitations under the License.-->
   <string name="total_energy">총 칼로리</string>
   <string name="hr_stats">심박수 통계 (bpm)</string>
   <string name="hr_series">심박수 시계열 (bpm)</string>
-  <string name="speed_stats">속도 통계 (m/s)</string>
+  <string name="speed_status">속도 통계 (m/s)</string>
   <string name="speed_series">속도 시계열 (m/s)</string>
   <string name="min_label">최소</string>
   <string name="max_label">최대</string>

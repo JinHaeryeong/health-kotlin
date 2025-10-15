@@ -15,6 +15,7 @@
  */
 package com.example.healthconnect.codelab.presentation.screen.exercisesessiondetail
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -102,18 +103,41 @@ fun ExerciseSessionDetailScreen(
           }
         }
       } else {
+        Log.v("HC_DEBUG", "sessionMetrics: $sessionMetrics")
         sessionDetailsItem(labelId = R.string.total_active_duration) {
           val activeDuration = sessionMetrics.totalActiveTime ?: Duration.ZERO
           Text(activeDuration.formatTime())
         }
+
+        // totalSteps를 구글에서 안 받아 준다는 데 그럼 왜 함수는 만들어 둔거지????????
+
+        sessionDetailsItem(labelId = R.string.total_distance) {
+          val distanceKm = sessionMetrics.totalDistance?.inKilometers
+          Text(
+            distanceKm?.let { String.format("%.2f km", it) }
+              ?: stringResource(id = R.string.not_available_abbrev)
+          )
+        }
+
         sessionDetailsItem(labelId = R.string.total_steps) {
           Text(sessionMetrics.totalSteps?.toString() ?: stringResource(id = R.string.not_available_abbrev))
         }
-        sessionDetailsItem(labelId = R.string.total_steps_for_day) { // stringResource를 새로 정의해야 함
+        sessionDetailsItem(labelId = R.string.total_steps_for_day) { // stringResource를 새로 정의 해야 함
           Text(sessionMetrics.totalStepsForDay?.toString() ?: stringResource(R.string.not_available_abbrev))
         }
         sessionDetailsItem(labelId = R.string.total_energy) {
           Text(formatEnergy(sessionMetrics.totalEnergyBurned))
+        }
+
+        sessionDetailsItem(labelId = R.string.speed_status) {
+          ExerciseSessionDetailsMinMaxAvg(
+            sessionMetrics.minSpeed?.toKmPerHour()?.let { "${"%.1f".format(it)} km/h" }
+              ?: stringResource(id = R.string.not_available_abbrev),
+            sessionMetrics.maxSpeed?.toKmPerHour()?.let { "${"%.1f".format(it)} km/h" }
+              ?: stringResource(id = R.string.not_available_abbrev),
+            sessionMetrics.avgSpeed?.toKmPerHour()?.let { "${"%.1f".format(it)} km/h" }
+              ?: stringResource(id = R.string.not_available_abbrev)
+          )
         }
         sessionDetailsItem(labelId = R.string.hr_stats) {
           ExerciseSessionDetailsMinMaxAvg(
@@ -236,3 +260,5 @@ private fun formatEnergy(energy: Energy?): String {
 
   return "${formatter.format(kcalValue)} kcal"
 }
+
+fun Velocity.toKmPerHour(): Double = this.inMetersPerSecond * 3.6

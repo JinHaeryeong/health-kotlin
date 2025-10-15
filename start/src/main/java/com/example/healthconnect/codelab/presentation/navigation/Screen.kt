@@ -33,6 +33,8 @@ enum class Screen(val route: String, val titleId: Int, val hasMenuItem: Boolean 
   LoginScreen("login_screen", R.string.login_screen, false),
 
   SignUp("signup_screen", R.string.signup_screen, false),
+
+  Total("total_screen", R.string.total_screen),
   ExerciseSessions("exercise_sessions", R.string.exercise_sessions),
   ExerciseSessionDetail("exercise_session_detail", R.string.exercise_session_detail, false),
   InputReadings("input_readings", R.string.input_readings),

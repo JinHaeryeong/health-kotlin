@@ -42,6 +42,7 @@ import com.example.healthconnect.codelab.presentation.screen.inputreadings.Input
 import com.example.healthconnect.codelab.presentation.screen.inputreadings.InputReadingsViewModelFactory
 import com.example.healthconnect.codelab.presentation.screen.privacypolicy.PrivacyPolicyScreen
 import com.example.healthconnect.codelab.presentation.screen.signup.SignupScreen
+import com.example.healthconnect.codelab.presentation.screen.total.TotalScreen
 import com.example.healthconnect.codelab.showExceptionSnackbar
 
 /**
@@ -75,6 +76,12 @@ fun HealthConnectNavigation(
             }
           }
         }
+      )
+    }
+
+    composable(Screen.Total.route) {
+      TotalScreen(
+        healthConnectManager = healthConnectManager
       )
     }
     composable(Screen.LoginScreen.route) {

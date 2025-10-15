@@ -40,20 +40,53 @@
   </application>
 
 
+  <!-- 심박수 -->
   <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
   <uses-permission android:name="android.permission.health.WRITE_HEART_RATE"/>
+
+  <!-- 걸음수 -->
   <uses-permission android:name="android.permission.health.READ_STEPS"/>
   <uses-permission android:name="android.permission.health.WRITE_STEPS"/>
+
+  <!-- 운동 세션 -->
   <uses-permission android:name="android.permission.health.READ_EXERCISE"/>
   <uses-permission android:name="android.permission.health.WRITE_EXERCISE"/>
   <uses-permission android:name="android.permission.health.READ_EXERCISE_ROUTE"/>
   <uses-permission android:name="android.permission.health.WRITE_EXERCISE_ROUTE"/>
+  <!-- 소모 칼로리 -->
   <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED"/>
   <uses-permission android:name="android.permission.health.WRITE_TOTAL_CALORIES_BURNED"/>
+  <!-- 체중 -->
   <uses-permission android:name="android.permission.health.READ_WEIGHT"/>
   <uses-permission android:name="android.permission.health.WRITE_WEIGHT"/>
+  <!-- 권한요청(백그라운드에서 데이터 받아오는 그런거..) -->
   <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
   <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+  <!-- 혈당 -->
+  <uses-permission android:name="android.permission.health.READ_BLOOD_GLUCOSE"/>
+  <uses-permission android:name="android.permission.health.WRITE_BLOOD_GLUCOSE"/>
+  <!-- 혈압 -->
+  <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE" />
+  <uses-permission android:name="android.permission.health.WRITE_BLOOD_PRESSURE" />
+  <!-- 체온  -->
+  <uses-permission android:name="android.permission.health.READ_BODY_TEMPERATURE" />
+  <uses-permission android:name="android.permission.health.WRITE_BODY_TEMPERATURE" />
+  <!-- 산소 포화도 -->
+  <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION" />
+  <uses-permission android:name="android.permission.health.WRITE_OXYGEN_SATURATION" />
+  <!-- 호흡수 -->
+  <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
+  <uses-permission android:name="android.permission.health.WRITE_RESPIRATORY_RATE" />
+
+  <!-- 속도 -->
+  <uses-permission android:name="android.permission.health.READ_SPEED" />
+  <uses-permission android:name="android.permission.health.WRITE_SPEED" />
+
+
+  <!-- 거리 -->
+  <uses-permission android:name="android.permission.health.READ_DISTANCE" />
+  <uses-permission android:name="android.permission.health.WRITE_DISTANCE" />
+
   <uses-permission android:name="android.permission.INTERNET" />
 
   <!-- TODO: declare Health Connect visibility -->
